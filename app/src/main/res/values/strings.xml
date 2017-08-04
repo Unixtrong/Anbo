@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Anbo</string>
+    <string name="main_auth_success">验证成功</string>
+    <string name="main_auth_invalid">会话无效</string>
+    <string name="main_auth_cancel">验证取消</string>
+    <string name="main_auth_failure">验证失败(%1$s):%2$s</string>
+    <string name="main_request_failure">加载失败</string>
 </resources>
