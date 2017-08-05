@@ -1,16 +1,25 @@
 package com.unixtrong.anbo.entity;
 
+import com.unixtrong.anbo.tools.Lg;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by danyun on 2017/8/5
  */
 
 public class Feed {
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
+
     private User mUser;
     /**
      * id
@@ -23,7 +32,9 @@ public class Feed {
     /**
      * created_at
      */
-    private String mTime;
+    private Date mDate;
+
+    private Retweet mRetweet;
 
     public static Feed fill(JSONObject jsonObject) {
         Feed feed = new Feed();
@@ -31,13 +42,21 @@ public class Feed {
             feed.setId(jsonObject.optInt("id"));
         }
         if (jsonObject.has("created_at")) {
-            feed.setTime(jsonObject.optString("created_at"));
+            try {
+                String createdAt = jsonObject.optString("created_at");
+                feed.setDate(DATE_FORMAT.parse(createdAt));
+            } catch (ParseException e) {
+                Lg.warn(e);
+            }
         }
         if (jsonObject.has("text")) {
             feed.setContent(jsonObject.optString("text"));
         }
         if (jsonObject.has("user")) {
             feed.setUser(User.fill(jsonObject.optJSONObject("user")));
+        }
+        if (jsonObject.has("retweeted_status")) {
+            feed.setRetweet(Retweet.fill(jsonObject.optJSONObject("retweeted_status")));
         }
         return feed;
     }
@@ -68,12 +87,12 @@ public class Feed {
         return this;
     }
 
-    public String getTime() {
-        return mTime;
+    public Date getDate() {
+        return mDate;
     }
 
-    public Feed setTime(String time) {
-        mTime = time;
+    public Feed setDate(Date date) {
+        mDate = date;
         return this;
     }
 
@@ -83,6 +102,15 @@ public class Feed {
 
     public Feed setId(long id) {
         mId = id;
+        return this;
+    }
+
+    public Retweet getRetweet() {
+        return mRetweet;
+    }
+
+    public Feed setRetweet(Retweet retweet) {
+        mRetweet = retweet;
         return this;
     }
 }

@@ -9,8 +9,14 @@ import android.widget.TextView;
 
 import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.Feed;
+import com.unixtrong.anbo.tools.Lg;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by danyun on 2017/8/5
@@ -20,11 +26,20 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     private Context mContext;
     private List<Feed> mFeedList;
     private LayoutInflater mInflater;
+    private Date mRequestDate;
 
-    public MainAdapter(Context context, List<Feed> feedList) {
+    private DateFormat mDisplayDateFormat = new SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault());
+    private DateFormat mDisplayTimeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+    MainAdapter(Context context, List<Feed> feedList) {
         this.mContext = context;
         this.mFeedList = feedList;
         this.mInflater = LayoutInflater.from(context);
+        mRequestDate = new Date();
+    }
+
+    void updateLastRequestTime(Date date) {
+        mRequestDate = date;
     }
 
     @Override
@@ -35,9 +50,19 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     @Override
     public void onBindViewHolder(FeedHolder holder, int position) {
         Feed feed = mFeedList.get(position);
-        holder.nameTextView.setText(feed.getUser().getName());
-        holder.dateTextView.setText(feed.getTime());
-        holder.contentTextView.setText(feed.getContent());
+        holder.mNameTextView.setText(feed.getUser().getName());
+        holder.mContentTextView.setText(feed.getContent());
+        holder.mDateTextView.setText(getDisplayTime(feed));
+
+        if (feed.getRetweet() != null) {
+            holder.mRetweetLayout.setVisibility(View.VISIBLE);
+            holder.mRetweetNameTextView.setText("@" + feed.getRetweet().getUser().getName());
+            holder.mRetweetContentTextView.setText(feed.getRetweet().getContent());
+        } else {
+            holder.mRetweetLayout.setVisibility(View.GONE);
+            holder.mRetweetNameTextView.setText("");
+            holder.mRetweetContentTextView.setText("");
+        }
     }
 
     @Override
@@ -45,16 +70,49 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         return mFeedList.size();
     }
 
+    private String getDisplayTime(Feed feed) {
+        long feedTime = feed.getDate().getTime();
+        long timeDiff = mRequestDate.getTime() - feedTime;
+        long requestDay = (mRequestDate.getTime() + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
+        long feedDay = (feedTime + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
+        Lg.debug(String.format(Locale.getDefault(), "request: %d(%d), feed: %d(%d)", mRequestDate.getTime(), requestDay, feedTime, feedDay));
+
+        String displayTime;
+        if (requestDay == feedDay) {
+            if (timeDiff < TimeUnit.MINUTES.toMillis(1)) {
+                displayTime = TimeUnit.MILLISECONDS.toSeconds(timeDiff) + " 秒前";
+            } else if (timeDiff < TimeUnit.HOURS.toMillis(1)) {
+                displayTime = TimeUnit.MILLISECONDS.toMinutes(timeDiff) + " 分钟前";
+            } else {
+                displayTime = mDisplayTimeFormat.format(feed.getDate());
+            }
+        } else if (requestDay - feedDay == 1) {
+            displayTime = "昨天 " + mDisplayTimeFormat.format(feed.getDate());
+        } else if (requestDay - feedDay == 2) {
+            displayTime = "前天" + mDisplayTimeFormat.format(feed.getDate());
+        } else {
+            displayTime = mDisplayDateFormat.format(feed.getDate());
+        }
+
+        return displayTime;
+    }
+
     static class FeedHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView;
-        TextView dateTextView;
-        TextView contentTextView;
+        TextView mNameTextView;
+        TextView mDateTextView;
+        TextView mContentTextView;
+        ViewGroup mRetweetLayout;
+        TextView mRetweetNameTextView;
+        TextView mRetweetContentTextView;
 
         FeedHolder(View itemView) {
             super(itemView);
-            nameTextView = (TextView) itemView.findViewById(R.id.tv_main_name);
-            dateTextView = (TextView) itemView.findViewById(R.id.tv_main_date);
-            contentTextView = (TextView) itemView.findViewById(R.id.tv_main_content);
+            mNameTextView = (TextView) itemView.findViewById(R.id.tv_main_name);
+            mDateTextView = (TextView) itemView.findViewById(R.id.tv_main_date);
+            mContentTextView = (TextView) itemView.findViewById(R.id.tv_main_content);
+            mRetweetLayout = (ViewGroup) itemView.findViewById(R.id.rl_main_retweet);
+            mRetweetNameTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet_name);
+            mRetweetContentTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet);
         }
     }
 }

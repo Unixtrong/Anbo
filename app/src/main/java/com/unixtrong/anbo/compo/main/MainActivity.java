@@ -21,6 +21,7 @@ import com.unixtrong.anbo.handler.WeiboApi;
 import com.unixtrong.anbo.tools.Lg;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +29,7 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements WbAuthListener {
 
-    private RecyclerView.Adapter mAdapter;
+    private MainAdapter mAdapter;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private List<Feed> mFeedList = new ArrayList<>();
     private SsoHandler mSsoHandler;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
             public void run() {
                 String token = AppInfo.getAccessToken(MainActivity.this);
                 Lg.debug("token: " + token);
-                ApiResult<List<Feed>> apiResult = WeiboApi.timeLine(token, 10);
+                ApiResult<List<Feed>> apiResult = WeiboApi.timeLine(token, 200);
                 boolean loadResult = false;
                 if (apiResult != null && apiResult.isSuccess()) {
                     List<Feed> feeds = apiResult.getBody();
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
                         Lg.debug(String.format(Locale.getDefault(), "result, size: %d, data: %s", feeds.size(), apiResult.getData()));
                         mFeedList.clear();
                         mFeedList.addAll(feeds);
+                        mAdapter.updateLastRequestTime(new Date());
                         loadResult = true;
                     }
                 }
