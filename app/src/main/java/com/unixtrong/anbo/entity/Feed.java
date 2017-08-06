@@ -19,22 +19,31 @@ import java.util.Locale;
 
 public class Feed {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
-
+    /**
+     * 对应 JSON 中的 user 字段
+     * 发送者的用户信息
+     */
     private User mUser;
     /**
-     * id
+     * 对应 JSON 中的 id 字段
+     * 本条微博的唯一 id
      */
     private long mId;
     /**
-     * text
+     * 对应 JSON 中的 text 字段
+     * F微博的文本内容
      */
     private String mContent;
     /**
-     * created_at
+     * 对应 JSON 中的 created_at 字段
+     * 微博的发布时间
      */
     private Date mDate;
-
-    private Retweet mRetweet;
+    /**
+     * 对应 JSON 中的 retweeted_status 字段
+     * 转发时才会出现，表示原微博
+     */
+    private Feed mRetweet;
 
     public static Feed fill(JSONObject jsonObject) {
         Feed feed = new Feed();
@@ -44,6 +53,7 @@ public class Feed {
         if (jsonObject.has("created_at")) {
             try {
                 String createdAt = jsonObject.optString("created_at");
+                // API 返回的时间格式需要解析为 Java 中的日期对象，方便后续时间的逻辑处理和展示
                 feed.setDate(DATE_FORMAT.parse(createdAt));
             } catch (ParseException e) {
                 Lg.warn(e);
@@ -56,7 +66,7 @@ public class Feed {
             feed.setUser(User.fill(jsonObject.optJSONObject("user")));
         }
         if (jsonObject.has("retweeted_status")) {
-            feed.setRetweet(Retweet.fill(jsonObject.optJSONObject("retweeted_status")));
+            feed.setRetweet(Feed.fill(jsonObject.optJSONObject("retweeted_status")));
         }
         return feed;
     }
@@ -105,11 +115,11 @@ public class Feed {
         return this;
     }
 
-    public Retweet getRetweet() {
+    public Feed getRetweet() {
         return mRetweet;
     }
 
-    public Feed setRetweet(Retweet retweet) {
+    public Feed setRetweet(Feed retweet) {
         mRetweet = retweet;
         return this;
     }

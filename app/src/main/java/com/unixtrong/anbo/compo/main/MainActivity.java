@@ -30,20 +30,26 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity implements WbAuthListener {
 
     private MainAdapter mAdapter;
-    private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private List<Feed> mFeedList = new ArrayList<>();
     private SsoHandler mSsoHandler;
+    /**
+     * 实例化一个执行器，可以在单一线程中执行任务
+     */
+    private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        // 判断用户是否登录
         if (AppInfo.hasSignIn(this)) {
             Lg.debug("has sign in.");
-            initData();
+            // 用户登录，则更新需要展示的数据
+            updateFeedList();
         } else {
             Lg.debug("to sign in.");
+            // 用户未登录，则跳转微博的 Web 登录页
             toSignIn();
         }
     }
@@ -59,29 +65,36 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
         RecyclerView feedsRecycler = (RecyclerView) findViewById(R.id.rv_main_feeds);
         feedsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         feedsRecycler.setAdapter(mAdapter);
+        // 设置 RecyclerView 的数据变化动画
         feedsRecycler.setItemAnimator(new DefaultItemAnimator());
+        // 设置 RecyclerView 的默认分割线
         feedsRecycler.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
-    private void initData() {
+    private void updateFeedList() {
+        // 在子线程中请求 Feed 数据
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 String token = AppInfo.getAccessToken(MainActivity.this);
                 Lg.debug("token: " + token);
+                // 调用封装好的微博 API 来获取 Feed 列表，流的读取以及 JSON 的解析已经封装在内
                 ApiResult<List<Feed>> apiResult = WeiboApi.timeLine(token, 200);
                 boolean loadResult = false;
+                // 如果返回结果成功，则更新内存中 mFeedList 的数据
                 if (apiResult != null && apiResult.isSuccess()) {
                     List<Feed> feeds = apiResult.getBody();
                     if (feeds != null) {
-                        Lg.debug(String.format(Locale.getDefault(), "result, size: %d, data: %s", feeds.size(), apiResult.getData()));
+                        Lg.debug(String.format(Locale.getDefault(), "result, size: %d, data: %s", feeds.size(), apiResult.getJson()));
                         mFeedList.clear();
                         mFeedList.addAll(feeds);
+                        // 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
                         mAdapter.updateLastRequestTime(new Date());
                         loadResult = true;
                     }
                 }
                 final boolean isLoadSuccess = loadResult;
+                // 返回主界面刷新 UI
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -113,8 +126,9 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
         String result = getString(o2Token.isSessionValid() ? R.string.main_auth_success : R.string.main_auth_invalid);
         Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
         if (o2Token.isSessionValid()) {
+            // 登录成功时，保存验证 token，并更新数据
             AppInfo.setAccessToken(this, o2Token.getToken());
-            initData();
+            updateFeedList();
         }
     }
 

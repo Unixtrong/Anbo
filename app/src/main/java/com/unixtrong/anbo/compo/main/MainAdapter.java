@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.Feed;
-import com.unixtrong.anbo.tools.Lg;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,13 +22,22 @@ import java.util.concurrent.TimeUnit;
  */
 
 class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
+    /**
+     * 格式化时间文本工具
+     * 用于较早发布的微博
+     */
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault());
+    /**
+     * 格式化时间文本工具
+     * 用于最近发布的微博
+     */
+    private DateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
     private Context mContext;
     private List<Feed> mFeedList;
     private LayoutInflater mInflater;
-    private Date mRequestDate;
 
-    private DateFormat mDisplayDateFormat = new SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault());
-    private DateFormat mDisplayTimeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    private Date mRequestDate;
 
     MainAdapter(Context context, List<Feed> feedList) {
         this.mContext = context;
@@ -38,6 +46,11 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         mRequestDate = new Date();
     }
 
+    /**
+     * 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
+     *
+     * @param date 最近一次请求的时间
+     */
     void updateLastRequestTime(Date date) {
         mRequestDate = date;
     }
@@ -56,7 +69,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
 
         if (feed.getRetweet() != null) {
             holder.mRetweetLayout.setVisibility(View.VISIBLE);
-            holder.mRetweetNameTextView.setText("@" + feed.getRetweet().getUser().getName());
+            holder.mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, feed.getRetweet().getUser().getName()));
             holder.mRetweetContentTextView.setText(feed.getRetweet().getContent());
         } else {
             holder.mRetweetLayout.setVisibility(View.GONE);
@@ -70,12 +83,18 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         return mFeedList.size();
     }
 
+    /**
+     * 根据 Feed 信息获取需要展示的时间文本
+     */
     private String getDisplayTime(Feed feed) {
+        // 微博发布时间的 long 型时间戳
         long feedTime = feed.getDate().getTime();
+        // 用户最近一次请求时间 和 微博发布时间 的差值
         long timeDiff = mRequestDate.getTime() - feedTime;
+        // 用户最近一次请求时间 所对应的天数
         long requestDay = (mRequestDate.getTime() + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
+        // 微博发布时间 所对应的天数
         long feedDay = (feedTime + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
-        Lg.debug(String.format(Locale.getDefault(), "request: %d(%d), feed: %d(%d)", mRequestDate.getTime(), requestDay, feedTime, feedDay));
 
         String displayTime;
         if (requestDay == feedDay) {
@@ -84,14 +103,14 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             } else if (timeDiff < TimeUnit.HOURS.toMillis(1)) {
                 displayTime = TimeUnit.MILLISECONDS.toMinutes(timeDiff) + " 分钟前";
             } else {
-                displayTime = mDisplayTimeFormat.format(feed.getDate());
+                displayTime = TIME_FORMAT.format(feed.getDate());
             }
         } else if (requestDay - feedDay == 1) {
-            displayTime = "昨天 " + mDisplayTimeFormat.format(feed.getDate());
+            displayTime = "昨天 " + TIME_FORMAT.format(feed.getDate());
         } else if (requestDay - feedDay == 2) {
-            displayTime = "前天" + mDisplayTimeFormat.format(feed.getDate());
+            displayTime = "前天" + TIME_FORMAT.format(feed.getDate());
         } else {
-            displayTime = mDisplayDateFormat.format(feed.getDate());
+            displayTime = DATE_FORMAT.format(feed.getDate());
         }
 
         return displayTime;

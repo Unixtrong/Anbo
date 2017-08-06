@@ -11,6 +11,11 @@ public class Lg {
     private static final String TAG = "anbo";
     private static boolean enable = false;
 
+    /**
+     * 设置日志开关
+     *
+     * @param enable 为 true 时，日志开启，否则关闭
+     */
     public static void setEnable(boolean enable) {
         Lg.enable = enable;
     }
@@ -34,6 +39,6 @@ public class Lg {
         String method = ste.getMethodName();
         int lineNum = ste.getLineNumber();
         log = log == null ? "" : log;
-        return String.format("%s %s(%s): %s", clazz, method, lineNum, log);
+        return String.format("%s:%s %s, %s", clazz, lineNum, method, log);
     }
 }
