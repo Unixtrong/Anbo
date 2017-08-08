@@ -14,11 +14,13 @@ import java.net.URL;
 public class HttpUtils {
 
     public static InputStream doGetRequest(String path, Bundle params) throws IOException {
-        String query = "";
-        for (String key : params.keySet()) {
-            query += "&" + key + "=" + params.getString(key);
+        if (params != null) {
+            String query = "";
+            for (String key : params.keySet()) {
+                query += "&" + key + "=" + params.getString(key);
+            }
+            path += query.replaceFirst("&", "?");
         }
-        path += query.replaceFirst("&", "?");
         Lg.debug("url: " + path);
         URL url = new URL(path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

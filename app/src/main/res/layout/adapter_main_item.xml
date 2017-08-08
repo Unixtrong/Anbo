@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/iv_main_avatar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:contentDescription="@null"
         android:src="@mipmap/ic_launcher_round"/>
 
@@ -17,9 +17,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="3dp"
         android:layout_toEndOf="@+id/iv_main_avatar"
-        android:text="name"/>
+        android:text="name"
+        android:textSize="16sp"/>
 
     <TextView
         android:id="@+id/tv_main_date"
@@ -27,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/tv_main_name"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="6dp"
         android:layout_toEndOf="@+id/iv_main_avatar"
         android:text="date"
         android:textSize="14sp"/>
@@ -39,7 +40,8 @@
         android:layout_below="@+id/iv_main_avatar"
         android:layout_marginTop="7dp"
         android:padding="3dp"
-        android:text="content"/>
+        android:text="content"
+        android:textSize="16sp"/>
 
     <RelativeLayout
         android:id="@+id/rl_main_retweet"
@@ -54,7 +56,8 @@
             android:id="@+id/tv_main_retweet_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="name"/>
+            android:text="name"
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/tv_main_retweet"
@@ -62,6 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_main_retweet_name"
             android:layout_marginTop="7dp"
-            android:text="retweet"/>
+            android:text="retweet"
+            android:textSize="16sp"/>
     </RelativeLayout>
 </RelativeLayout>

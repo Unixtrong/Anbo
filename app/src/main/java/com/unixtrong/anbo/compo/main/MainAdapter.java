@@ -5,11 +5,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.Feed;
 import com.unixtrong.anbo.entity.User;
+import com.unixtrong.anbo.handler.PicLoader;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -69,6 +71,8 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         holder.mNameTextView.setText(userName);
         holder.mContentTextView.setText(feed.getContent());
         holder.mDateTextView.setText(getDisplayTime(feed));
+        String avatarUrl = getSafeAvatarUrl(feed.getUser());
+        PicLoader.with(mContext).bind(avatarUrl, holder.mAvatarImageView, R.mipmap.ic_launcher_round);
 
         if (feed.getRetweet() != null) {
             holder.mRetweetLayout.setVisibility(View.VISIBLE);
@@ -91,6 +95,14 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     private String getSafeUserName(User user) {
         if (user != null) {
             return user.getName();
+        } else {
+            return null;
+        }
+    }
+
+    private String getSafeAvatarUrl(User user) {
+        if (user != null) {
+            return user.getAvatar();
         } else {
             return null;
         }
@@ -137,6 +149,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     }
 
     static class FeedHolder extends RecyclerView.ViewHolder {
+        ImageView mAvatarImageView;
         TextView mNameTextView;
         TextView mDateTextView;
         TextView mContentTextView;
@@ -146,6 +159,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
 
         FeedHolder(View itemView) {
             super(itemView);
+            mAvatarImageView = (ImageView) itemView.findViewById(R.id.iv_main_avatar);
             mNameTextView = (TextView) itemView.findViewById(R.id.tv_main_name);
             mDateTextView = (TextView) itemView.findViewById(R.id.tv_main_date);
             mContentTextView = (TextView) itemView.findViewById(R.id.tv_main_content);

@@ -1,6 +1,7 @@
 package com.unixtrong.anbo.tools;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,7 +32,7 @@ public class CodeUtils {
         return builder;
     }
 
-    private static void closeStream(AutoCloseable closeable) {
+    public static void closeStream(Closeable closeable) {
         if (closeable != null) try {
             closeable.close();
         } catch (Exception e) {
