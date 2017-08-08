@@ -3,12 +3,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="10dp">
+                android:padding="15dp">
 
     <ImageView
         android:id="@+id/iv_main_avatar"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:contentDescription="@null"
         android:src="@mipmap/ic_launcher_round"/>
 
@@ -16,31 +16,33 @@
         android:id="@+id/tv_main_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_main_date"
+        android:layout_alignTop="@+id/iv_main_avatar"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="3dp"
         android:layout_toEndOf="@+id/iv_main_avatar"
         android:text="name"
-        android:textSize="16sp"/>
+        android:textColor="#000000"
+        android:textSize="15sp"/>
 
     <TextView
         android:id="@+id/tv_main_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_main_name"
+        android:layout_alignBottom="@+id/iv_main_avatar"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="6dp"
         android:layout_toEndOf="@+id/iv_main_avatar"
         android:text="date"
-        android:textSize="14sp"/>
+        android:textColor="#939393"
+        android:textSize="13sp"/>
 
     <TextView
         android:id="@+id/tv_main_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/iv_main_avatar"
-        android:layout_marginTop="7dp"
-        android:padding="3dp"
+        android:paddingTop="10dp"
         android:text="content"
+        android:textColor="#000000"
         android:textSize="16sp"/>
 
     <RelativeLayout
@@ -57,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="name"
-            android:textSize="16sp"/>
+            android:textSize="15sp"/>
 
         <TextView
             android:id="@+id/tv_main_retweet"
@@ -66,6 +68,6 @@
             android:layout_below="@+id/tv_main_retweet_name"
             android:layout_marginTop="7dp"
             android:text="retweet"
-            android:textSize="16sp"/>
+            android:textSize="15sp"/>
     </RelativeLayout>
 </RelativeLayout>
