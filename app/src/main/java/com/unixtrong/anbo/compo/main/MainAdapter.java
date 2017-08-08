@@ -100,29 +100,36 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
      * 根据 Feed 信息获取需要展示的时间文本
      */
     private String getDisplayTime(Feed feed) {
-        // 微博发布时间的 long 型时间戳
+        // 微博发布时间的 long 型时间戳，即该时间距离 1970 年 1 月 1 日上午 8 点所产生的毫秒数
         long feedTime = feed.getDate().getTime();
-        // 用户最近一次请求时间 和 微博发布时间 的差值
+        // 【用户最近一次请求时间】和【微博发布时间】的差值
         long timeDiff = mRequestDate.getTime() - feedTime;
-        // 用户最近一次请求时间 所对应的天数
+        // 用户最近一次请求时间所对应的天数 =（请求时间毫秒数 + 八小时毫秒数）/ 一天毫秒数
         long requestDay = (mRequestDate.getTime() + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
-        // 微博发布时间 所对应的天数
+        // 微博发布时间所对应的天数 =（微博发布时间毫秒数 + 八小时毫秒数）/ 一天毫秒数
         long feedDay = (feedTime + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
 
         String displayTime;
         if (requestDay == feedDay) {
+            // 当微博时间和请求时间是同一天时
             if (timeDiff < TimeUnit.MINUTES.toMillis(1)) {
+                // 当微博时间和请求时间相差 1 分钟以内时，展示示例：「23 秒前」
                 displayTime = TimeUnit.MILLISECONDS.toSeconds(timeDiff) + " 秒前";
             } else if (timeDiff < TimeUnit.HOURS.toMillis(1)) {
+                // 当微博时间和请求时间相差 1 小时以内时，展示示例：「4 分钟前」
                 displayTime = TimeUnit.MILLISECONDS.toMinutes(timeDiff) + " 分钟前";
             } else {
+                // 当微博时间和请求时间相差 2 小时及以上时，展示示例：「11:09」
                 displayTime = TIME_FORMAT.format(feed.getDate());
             }
         } else if (requestDay - feedDay == 1) {
+            // 当微博时间比请求时间早 1 天时，展示示例：「昨天 05:31」
             displayTime = "昨天 " + TIME_FORMAT.format(feed.getDate());
         } else if (requestDay - feedDay == 2) {
+            // 当微博时间比请求时间早 2 天时，展示示例：「前天 14:23」
             displayTime = "前天" + TIME_FORMAT.format(feed.getDate());
         } else {
+            // 当微博时间比请求时间早 3 天及以上时，展示示例：「17-07-23 11:09」
             displayTime = DATE_FORMAT.format(feed.getDate());
         }
 
