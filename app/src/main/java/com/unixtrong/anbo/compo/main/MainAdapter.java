@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.Feed;
+import com.unixtrong.anbo.entity.User;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -63,13 +64,17 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     @Override
     public void onBindViewHolder(FeedHolder holder, int position) {
         Feed feed = mFeedList.get(position);
-        holder.mNameTextView.setText(feed.getUser().getName());
+        String userName = getSafeUserName(feed.getUser());
+        holder.mNameTextView.setVisibility(userName != null ? View.VISIBLE : View.GONE);
+        holder.mNameTextView.setText(userName);
         holder.mContentTextView.setText(feed.getContent());
         holder.mDateTextView.setText(getDisplayTime(feed));
 
         if (feed.getRetweet() != null) {
             holder.mRetweetLayout.setVisibility(View.VISIBLE);
-            holder.mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, feed.getRetweet().getUser().getName()));
+            String retweetUserName = getSafeUserName(feed.getRetweet().getUser());
+            holder.mRetweetNameTextView.setVisibility(retweetUserName != null ? View.VISIBLE : View.GONE);
+            holder.mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, retweetUserName));
             holder.mRetweetContentTextView.setText(feed.getRetweet().getContent());
         } else {
             holder.mRetweetLayout.setVisibility(View.GONE);
@@ -81,6 +86,14 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     @Override
     public int getItemCount() {
         return mFeedList.size();
+    }
+
+    private String getSafeUserName(User user) {
+        if (user != null) {
+            return user.getName();
+        } else {
+            return null;
+        }
     }
 
     /**

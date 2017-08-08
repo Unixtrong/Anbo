@@ -19,6 +19,7 @@ public class HttpUtils {
             query += "&" + key + "=" + params.getString(key);
         }
         path += query.replaceFirst("&", "?");
+        Lg.debug("url: " + path);
         URL url = new URL(path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(10 * 1000);
