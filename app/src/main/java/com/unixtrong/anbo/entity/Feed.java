@@ -18,6 +18,9 @@ import java.util.Locale;
  */
 
 public class Feed {
+    public static final int TYPE_RETWEET = 1;
+    public static final int TYPE_PICTURE = 2;
+
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
     /**
      * 对应 JSON 中的 user 字段
@@ -40,10 +43,17 @@ public class Feed {
      */
     private Date mDate;
     /**
+     * 对应 JSON 中的 pic_urls 字段
+     * 图片微博才会出现，表示图片地址
+     */
+    private String[] mPics;
+    /**
      * 对应 JSON 中的 retweeted_status 字段
      * 转发时才会出现，表示原微博
      */
     private Feed mRetweet;
+
+    private int mType;
 
     public static Feed fill(JSONObject jsonObject) {
         Feed feed = new Feed();
@@ -65,8 +75,21 @@ public class Feed {
         if (jsonObject.has("user")) {
             feed.setUser(User.fill(jsonObject.optJSONObject("user")));
         }
+        if (jsonObject.has("pic_urls")) {
+            JSONArray jsonArray = jsonObject.optJSONArray("pic_urls");
+            String[] pics = new String[jsonArray.length()];
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject picJson = jsonArray.optJSONObject(i);
+                pics[i] = picJson.optString("thumbnail_pic");
+            }
+            if (pics.length != 0) {
+                feed.setPics(pics);
+                feed.setType(TYPE_PICTURE);
+            }
+        }
         if (jsonObject.has("retweeted_status")) {
             feed.setRetweet(Feed.fill(jsonObject.optJSONObject("retweeted_status")));
+            feed.setType(TYPE_RETWEET);
         }
         return feed;
     }
@@ -121,6 +144,24 @@ public class Feed {
 
     public Feed setRetweet(Feed retweet) {
         mRetweet = retweet;
+        return this;
+    }
+
+    public String[] getPics() {
+        return mPics;
+    }
+
+    public Feed setPics(String[] pics) {
+        mPics = pics;
+        return this;
+    }
+
+    public int getType() {
+        return mType;
+    }
+
+    public Feed setType(int type) {
+        mType = type;
         return this;
     }
 }

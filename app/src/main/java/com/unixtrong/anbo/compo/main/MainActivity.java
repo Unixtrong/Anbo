@@ -2,6 +2,7 @@ package com.unixtrong.anbo.compo.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -63,12 +64,15 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
         mAdapter = new MainAdapter(this, mFeedList);
 
         RecyclerView feedsRecycler = (RecyclerView) findViewById(R.id.rv_main_feeds);
-        feedsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        feedsRecycler.setLayoutManager(layoutManager);
         feedsRecycler.setAdapter(mAdapter);
+        // 设置 RecyclerView 的默认分割线
+        DividerItemDecoration decor = new DividerItemDecoration(this, layoutManager.getOrientation());
+        decor.setDrawable(ContextCompat.getDrawable(this, R.drawable.shape_feed_divider));
+        feedsRecycler.addItemDecoration(decor);
         // 设置 RecyclerView 的数据变化动画
         feedsRecycler.setItemAnimator(new DefaultItemAnimator());
-        // 设置 RecyclerView 的默认分割线
-        feedsRecycler.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
     private void updateFeedList() {
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
                 String token = AppInfo.getAccessToken(MainActivity.this);
                 Lg.debug("token: " + token);
                 // 调用封装好的微博 API 来获取 Feed 列表，流的读取以及 JSON 的解析已经封装在内
-                ApiResult<List<Feed>> apiResult = WeiboApi.timeLine(token, 200);
+                ApiResult<List<Feed>> apiResult = WeiboApi.timeLine(token, 50);
                 boolean loadResult = false;
                 // 如果返回结果成功，则更新内存中 mFeedList 的数据
                 if (apiResult != null && apiResult.isSuccess()) {

@@ -61,6 +61,7 @@ public class PicLoader {
             if (bitmap != null) {
                 target.setImageBitmap(bitmap);
             } else {
+                target.setImageResource(defaultRes);
                 mExecutor.execute(new LoadRunnable(new Pic(picKey, url, target)));
             }
         }

@@ -2,6 +2,9 @@ package com.unixtrong.anbo.tools;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.WindowManager;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +25,7 @@ public class Utils {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T getService(Context context, String service) {
+    public static <T> T getService(Context context, String service) {
         return (T) context.getSystemService(service);
     }
 
@@ -51,5 +54,13 @@ public class Utils {
             Lg.warn(e);
         }
         return null;
+    }
+
+    public static DisplayMetrics getScreenSize(Context context) {
+        WindowManager wm = Utils.getService(context, Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+        return outMetrics;
     }
 }

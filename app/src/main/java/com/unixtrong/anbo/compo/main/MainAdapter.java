@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by danyun on 2017/8/5
@@ -34,65 +36,25 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
      * 格式化时间文本工具
      * 用于最近发布的微博
      */
-    private DateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    private static final DateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    /**
+     * 头像大小正则模板
+     */
+    private static final Pattern PATTERN = Pattern.compile("crop\\.(\\d+\\.){4}(\\d+)");
 
+    private static Date sRequestDate;
     private Context mContext;
     private List<Feed> mFeedList;
     private LayoutInflater mInflater;
-
-    private Date mRequestDate;
 
     MainAdapter(Context context, List<Feed> feedList) {
         this.mContext = context;
         this.mFeedList = feedList;
         this.mInflater = LayoutInflater.from(context);
-        mRequestDate = new Date();
+        sRequestDate = new Date();
     }
 
-    /**
-     * 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
-     *
-     * @param date 最近一次请求的时间
-     */
-    void updateLastRequestTime(Date date) {
-        mRequestDate = date;
-    }
-
-    @Override
-    public FeedHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new FeedHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
-    }
-
-    @Override
-    public void onBindViewHolder(FeedHolder holder, int position) {
-        Feed feed = mFeedList.get(position);
-        String userName = getSafeUserName(feed.getUser());
-        holder.mNameTextView.setVisibility(userName != null ? View.VISIBLE : View.GONE);
-        holder.mNameTextView.setText(userName);
-        holder.mContentTextView.setText(feed.getContent());
-        holder.mDateTextView.setText(getDisplayTime(feed));
-        String avatarUrl = getSafeAvatarUrl(feed.getUser());
-        PicLoader.with(mContext).bind(avatarUrl, holder.mAvatarImageView, R.mipmap.ic_launcher_round);
-
-        if (feed.getRetweet() != null) {
-            holder.mRetweetLayout.setVisibility(View.VISIBLE);
-            String retweetUserName = getSafeUserName(feed.getRetweet().getUser());
-            holder.mRetweetNameTextView.setVisibility(retweetUserName != null ? View.VISIBLE : View.GONE);
-            holder.mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, retweetUserName));
-            holder.mRetweetContentTextView.setText(feed.getRetweet().getContent());
-        } else {
-            holder.mRetweetLayout.setVisibility(View.GONE);
-            holder.mRetweetNameTextView.setText("");
-            holder.mRetweetContentTextView.setText("");
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        return mFeedList.size();
-    }
-
-    private String getSafeUserName(User user) {
+    private static String userName(User user) {
         if (user != null) {
             return user.getName();
         } else {
@@ -100,9 +62,16 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         }
     }
 
-    private String getSafeAvatarUrl(User user) {
+    private static String avatarThumbUrl(User user) {
         if (user != null) {
-            return user.getAvatar();
+            String avatar = user.getAvatar();
+            Matcher matcher = PATTERN.matcher(avatar);
+            if (matcher.find()) {
+                String cropStr = matcher.group();
+                String newCrop = cropStr.substring(0, cropStr.lastIndexOf(".")) + ".120";
+                avatar = avatar.replaceAll(cropStr, newCrop);
+            }
+            return avatar;
         } else {
             return null;
         }
@@ -111,13 +80,13 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     /**
      * 根据 Feed 信息获取需要展示的时间文本
      */
-    private String getDisplayTime(Feed feed) {
+    private static String getDisplayTime(Feed feed) {
         // 微博发布时间的 long 型时间戳，即该时间距离 1970 年 1 月 1 日上午 8 点所产生的毫秒数
         long feedTime = feed.getDate().getTime();
         // 【用户最近一次请求时间】和【微博发布时间】的差值
-        long timeDiff = mRequestDate.getTime() - feedTime;
+        long timeDiff = sRequestDate.getTime() - feedTime;
         // 用户最近一次请求时间所对应的天数 =（请求时间毫秒数 + 八小时毫秒数）/ 一天毫秒数
-        long requestDay = (mRequestDate.getTime() + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
+        long requestDay = (sRequestDate.getTime() + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
         // 微博发布时间所对应的天数 =（微博发布时间毫秒数 + 八小时毫秒数）/ 一天毫秒数
         long feedDay = (feedTime + TimeUnit.HOURS.toMillis(8)) / TimeUnit.DAYS.toMillis(1);
 
@@ -148,24 +117,112 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         return displayTime;
     }
 
+    /**
+     * 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
+     *
+     * @param date 最近一次请求的时间
+     */
+    void updateLastRequestTime(Date date) {
+        sRequestDate = date;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mFeedList.get(position).getType();
+    }
+
+    @Override
+    public FeedHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case Feed.TYPE_PICTURE:
+                return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
+            case Feed.TYPE_RETWEET:
+            default:
+                return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(FeedHolder holder, int position) {
+        Feed feed = mFeedList.get(position);
+        holder.bind(feed);
+    }
+
+    @Override
+    public int getItemCount() {
+        return mFeedList.size();
+    }
+
     static class FeedHolder extends RecyclerView.ViewHolder {
+        Context mContext;
         ImageView mAvatarImageView;
         TextView mNameTextView;
         TextView mDateTextView;
         TextView mContentTextView;
-        ViewGroup mRetweetLayout;
-        TextView mRetweetNameTextView;
-        TextView mRetweetContentTextView;
 
         FeedHolder(View itemView) {
             super(itemView);
+            mContext = itemView.getContext();
             mAvatarImageView = (ImageView) itemView.findViewById(R.id.iv_main_avatar);
             mNameTextView = (TextView) itemView.findViewById(R.id.tv_main_name);
             mDateTextView = (TextView) itemView.findViewById(R.id.tv_main_date);
             mContentTextView = (TextView) itemView.findViewById(R.id.tv_main_content);
+        }
+
+        void bind(Feed feed) {
+            String userName = userName(feed.getUser());
+            mNameTextView.setVisibility(userName != null ? View.VISIBLE : View.GONE);
+            mNameTextView.setText(userName);
+            mContentTextView.setText(feed.getContent());
+            mDateTextView.setText(getDisplayTime(feed));
+            String avatarUrl = avatarThumbUrl(feed.getUser());
+            PicLoader.with(mContext).bind(avatarUrl, mAvatarImageView, R.mipmap.ic_launcher_round);
+        }
+    }
+
+    private class TextHolder extends FeedHolder {
+        ViewGroup mRetweetLayout;
+        TextView mRetweetNameTextView;
+        TextView mRetweetContentTextView;
+
+        TextHolder(View itemView) {
+            super(itemView);
             mRetweetLayout = (ViewGroup) itemView.findViewById(R.id.rl_main_retweet);
             mRetweetNameTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet_name);
             mRetweetContentTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet);
+        }
+
+        void bind(Feed feed) {
+            super.bind(feed);
+            if (feed.getRetweet() != null) {
+                mRetweetLayout.setVisibility(View.VISIBLE);
+                String retweetUserName = userName(feed.getRetweet().getUser());
+                mRetweetNameTextView.setVisibility(retweetUserName != null ? View.VISIBLE : View.GONE);
+                mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, retweetUserName));
+                mRetweetContentTextView.setText(feed.getRetweet().getContent());
+            } else {
+                mRetweetLayout.setVisibility(View.GONE);
+                mRetweetNameTextView.setText("");
+                mRetweetContentTextView.setText("");
+            }
+        }
+    }
+
+    private class PicHolder extends FeedHolder {
+
+        ImageView mPicImageView;
+
+        PicHolder(View itemView) {
+            super(itemView);
+            mPicImageView = (ImageView) itemView.findViewById(R.id.iv_main_pic);
+        }
+
+        void bind(Feed feed) {
+            super.bind(feed);
+            String[] pics = feed.getPics();
+            String pic = pics.length != 0 ? pics[0] : "";
+            pic = pic.replaceFirst("thumbnail", "wap720");
+            PicLoader.with(mContext).bind(pic, mPicImageView, R.mipmap.ic_launcher);
         }
     }
 }
