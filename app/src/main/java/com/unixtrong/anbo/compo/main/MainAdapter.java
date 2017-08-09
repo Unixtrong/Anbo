@@ -144,8 +144,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
 
     @Override
     public void onBindViewHolder(FeedHolder holder, int position) {
-        Feed feed = mFeedList.get(position);
-        holder.bind(feed);
+        holder.bind(mFeedList.get(position));
     }
 
     @Override
