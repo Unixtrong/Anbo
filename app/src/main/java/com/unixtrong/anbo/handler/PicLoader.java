@@ -94,13 +94,15 @@ public class PicLoader {
         @Override
         public void run() {
             File file = cacheFile(mPic.mKey);
-            if (file.exists()) {
-                mLruCache.put(mPic.mKey, BitmapFactory.decodeFile(file.getAbsolutePath()));
+            Bitmap fileBitmap;
+            if (file.exists() && (fileBitmap = BitmapFactory.decodeFile(file.getAbsolutePath())) != null) {
+                mLruCache.put(mPic.mKey, fileBitmap);
                 mHandler.obtainMessage(HANDLER_ON_DISK, mPic).sendToTarget();
             } else {
                 file = Downloader.start(mPic.mUrl, file.getAbsolutePath());
-                if (file != null && file.exists()) {
-                    mLruCache.put(mPic.mKey, BitmapFactory.decodeFile(file.getAbsolutePath()));
+                Bitmap downloadBitmap;
+                if (file != null && file.exists() && (downloadBitmap = BitmapFactory.decodeFile(file.getAbsolutePath())) != null) {
+                    mLruCache.put(mPic.mKey, downloadBitmap);
                     mHandler.obtainMessage(HANDLER_ON_REMOTE, mPic).sendToTarget();
                 }
             }

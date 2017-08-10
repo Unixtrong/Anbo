@@ -20,6 +20,7 @@ import java.util.Locale;
 public class Feed {
     public static final int TYPE_RETWEET = 1;
     public static final int TYPE_PICTURE = 2;
+    public static final int TYPE_MULTI_PICTURE = 3;
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
     /**
@@ -82,10 +83,14 @@ public class Feed {
                 JSONObject picJson = jsonArray.optJSONObject(i);
                 pics[i] = picJson.optString("thumbnail_pic");
             }
-            if (pics.length != 0) {
+            if (pics.length == 1) {
                 feed.setPics(pics);
                 feed.setType(TYPE_PICTURE);
+            } else if (pics.length > 1) {
+                feed.setPics(pics);
+                feed.setType(TYPE_MULTI_PICTURE);
             }
+
         }
         if (jsonObject.has("retweeted_status")) {
             feed.setRetweet(Feed.fill(jsonObject.optJSONObject("retweeted_status")));

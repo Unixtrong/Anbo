@@ -12,6 +12,7 @@ import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.Feed;
 import com.unixtrong.anbo.entity.User;
 import com.unixtrong.anbo.handler.PicLoader;
+import com.unixtrong.anbo.view.MultiPicLayout;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -136,6 +137,8 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         switch (viewType) {
             case Feed.TYPE_PICTURE:
                 return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
+            case Feed.TYPE_MULTI_PICTURE:
+                return new MultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_multi_pics, parent, false));
             case Feed.TYPE_RETWEET:
             default:
                 return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
@@ -222,6 +225,30 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             String pic = pics.length != 0 ? pics[0] : "";
             pic = pic.replaceFirst("thumbnail", "wap720");
             PicLoader.with(mContext).bind(pic, mPicImageView, R.mipmap.ic_launcher);
+        }
+    }
+
+    private class MultiPicHolder extends FeedHolder {
+
+        MultiPicLayout mPicsLayout;
+
+        MultiPicHolder(View itemView) {
+            super(itemView);
+            mPicsLayout = (MultiPicLayout) itemView.findViewById(R.id.mpl_main_pics);
+        }
+
+        void bind(Feed feed) {
+            super.bind(feed);
+            String[] pics = feed.getPics();
+            ImageView[] imageViews = mPicsLayout.getImageViews();
+            for (int i = 0; i < pics.length; i++) {
+                ImageView imageView = imageViews[i];
+                imageView.setVisibility(View.VISIBLE);
+                PicLoader.with(mContext).bind(pics[i], imageView, R.mipmap.ic_launcher);
+            }
+            for (int i = pics.length; i < imageViews.length; i++) {
+                imageViews[i].setVisibility(View.GONE);
+            }
         }
     }
 }

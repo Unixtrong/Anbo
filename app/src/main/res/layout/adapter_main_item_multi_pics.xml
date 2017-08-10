@@ -10,12 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <com.unixtrong.anbo.view.SinglePicView
-        android:id="@+id/iv_main_pic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:contentDescription="@null"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/ic_launcher"/>
+    <com.unixtrong.anbo.view.MultiPicLayout
+        android:id="@+id/mpl_main_pics"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

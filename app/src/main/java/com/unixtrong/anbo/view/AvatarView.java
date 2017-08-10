@@ -15,23 +15,23 @@ import android.util.AttributeSet;
  * Author(s): danyun
  * Date: 2017/8/9
  */
-public class AvatarImageView extends android.support.v7.widget.AppCompatImageView {
+public class AvatarView extends android.support.v7.widget.AppCompatImageView {
     private Paint mPaint;
     private Xfermode mXfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
     private Bitmap mSrcBitmap;
     private Bitmap mMaskBitmap;
 
-    public AvatarImageView(Context context) {
+    public AvatarView(Context context) {
         super(context);
         init();
     }
 
-    public AvatarImageView(Context context, AttributeSet attrs) {
+    public AvatarView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public AvatarImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public AvatarView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }

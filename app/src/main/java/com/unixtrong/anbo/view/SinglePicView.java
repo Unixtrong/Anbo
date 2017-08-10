@@ -13,20 +13,20 @@ import com.unixtrong.anbo.tools.Utils;
  * Created by danyun on 2017/8/9
  */
 
-public class SingleImageView extends android.support.v7.widget.AppCompatImageView {
+public class SinglePicView extends android.support.v7.widget.AppCompatImageView {
     private int mScreenWidth;
 
-    public SingleImageView(Context context) {
+    public SinglePicView(Context context) {
         super(context);
         init();
     }
 
-    public SingleImageView(Context context, AttributeSet attrs) {
+    public SinglePicView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public SingleImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SinglePicView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
