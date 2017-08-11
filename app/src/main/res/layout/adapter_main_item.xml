@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:background="#EEEEEE"
+        android:background="@drawable/shape_feed_retweet_stroke"
         android:padding="6dp">
 
         <TextView
@@ -23,6 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="name"
+            android:textColor="#4383a0"
             android:textSize="15sp"/>
 
         <TextView

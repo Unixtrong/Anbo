@@ -1,7 +1,9 @@
 package com.unixtrong.anbo.compo.main;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,6 +120,17 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         return displayTime;
     }
 
+    private static CharSequence regexContent(String text) {
+        Pattern pattern = Pattern.compile("@\\w+");
+        Matcher matcher = pattern.matcher(text);
+        ForegroundColorSpan span = new ForegroundColorSpan(Color.parseColor("#FF0000"));
+        while (matcher.find()) {
+            String name = matcher.group();
+            text = text.replaceAll(name, "{" + name + "}");
+        }
+        return text;
+    }
+
     /**
      * 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
      *
@@ -175,7 +188,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             String userName = userName(feed.getUser());
             mNameTextView.setVisibility(userName != null ? View.VISIBLE : View.GONE);
             mNameTextView.setText(userName);
-            mContentTextView.setText(feed.getContent());
+            mContentTextView.setText(regexContent(feed.getContent()));
             mDateTextView.setText(getDisplayTime(feed));
             String avatarUrl = avatarThumbUrl(feed.getUser());
             PicLoader.with(mContext).bind(avatarUrl, mAvatarImageView, R.mipmap.ic_launcher_round, 120, 120);
