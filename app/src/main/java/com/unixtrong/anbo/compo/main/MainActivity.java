@@ -17,7 +17,9 @@ import com.sina.weibo.sdk.auth.sso.SsoHandler;
 import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.ApiResult;
 import com.unixtrong.anbo.entity.Feed;
+import com.unixtrong.anbo.entity.Group;
 import com.unixtrong.anbo.handler.AppInfo;
+import com.unixtrong.anbo.handler.GroupApi;
 import com.unixtrong.anbo.handler.WeiboApi;
 import com.unixtrong.anbo.tools.Lg;
 
@@ -109,6 +111,12 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
                         }
                     }
                 });
+                ApiResult<List<Group>> apiResultGroup = GroupApi.get(token);
+                if (apiResultGroup != null && apiResultGroup.isSuccess()) {
+                    for (Group group : apiResultGroup.getBody()) {
+                        Lg.debug("group, id: " + group.getId() + " name: " + group.getName() + " count: " + group.getCount());
+                    }
+                }
             }
         });
     }

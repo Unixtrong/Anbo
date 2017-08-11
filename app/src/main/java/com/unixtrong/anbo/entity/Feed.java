@@ -58,10 +58,10 @@ public class Feed {
 
     public static Feed fill(JSONObject jsonObject) {
         Feed feed = new Feed();
-        if (jsonObject.has("id")) {
+        if (!jsonObject.isNull("id")) {
             feed.setId(jsonObject.optInt("id"));
         }
-        if (jsonObject.has("created_at")) {
+        if (!jsonObject.isNull("created_at")) {
             try {
                 String createdAt = jsonObject.optString("created_at");
                 // API 返回的时间格式需要解析为 Java 中的日期对象，方便后续时间的逻辑处理和展示
@@ -70,13 +70,13 @@ public class Feed {
                 Lg.warn(e);
             }
         }
-        if (jsonObject.has("text")) {
+        if (!jsonObject.isNull("text")) {
             feed.setContent(jsonObject.optString("text"));
         }
-        if (jsonObject.has("user")) {
+        if (!jsonObject.isNull("user")) {
             feed.setUser(User.fill(jsonObject.optJSONObject("user")));
         }
-        if (jsonObject.has("pic_urls")) {
+        if (!jsonObject.isNull("pic_urls")) {
             JSONArray jsonArray = jsonObject.optJSONArray("pic_urls");
             String[] pics = new String[jsonArray.length()];
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -92,7 +92,7 @@ public class Feed {
             }
 
         }
-        if (jsonObject.has("retweeted_status")) {
+        if (!jsonObject.isNull("retweeted_status")) {
             feed.setRetweet(Feed.fill(jsonObject.optJSONObject("retweeted_status")));
             feed.setType(TYPE_RETWEET);
         }

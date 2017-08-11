@@ -23,13 +23,13 @@ public class User {
 
     public static User fill(JSONObject jsonObject) {
         User user = new User();
-        if (jsonObject.has("id")) {
+        if (!jsonObject.isNull("id")) {
             user.setId(jsonObject.optInt("id"));
         }
-        if (jsonObject.has("name")) {
+        if (!jsonObject.isNull("name")) {
             user.setName(jsonObject.optString("name"));
         }
-        if (jsonObject.has("profile_image_url")) {
+        if (!jsonObject.isNull("profile_image_url")) {
             user.setAvatar(jsonObject.optString("profile_image_url"));
         }
         return user;

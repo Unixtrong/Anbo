@@ -11,14 +11,14 @@ public class ApiResult<T> {
     private String mErrorMessage;
     private T mBody;
 
-    public static <B> ApiResult<B> fill(JSONObject json, Parser<B> parser) {
+    public static <B> ApiResult<B> fill(JSONObject jsonObject, Parser<B> parser) {
         ApiResult<B> result = new ApiResult<>();
-        result.mJson = json;
-        if (json.has("error_code")) {
-            result.mErrorCode = json.optString("error_code");
+        result.mJson = jsonObject;
+        if (!jsonObject.isNull("error_code")) {
+            result.mErrorCode = jsonObject.optString("error_code");
         }
-        if (json.has("error")) {
-            result.mErrorMessage = json.optString("error");
+        if (!jsonObject.isNull("error")) {
+            result.mErrorMessage = jsonObject.optString("error");
         }
         if (result.isSuccess()) {
             result.mBody = parser.parse(result.mJson);
