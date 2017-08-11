@@ -1,8 +1,9 @@
 package com.unixtrong.anbo.compo.main;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.unixtrong.anbo.R;
 import com.unixtrong.anbo.entity.Feed;
 import com.unixtrong.anbo.entity.User;
 import com.unixtrong.anbo.handler.PicLoader;
+import com.unixtrong.anbo.tools.Lg;
 import com.unixtrong.anbo.view.MultiPicLayout;
 
 import java.text.DateFormat;
@@ -43,9 +45,13 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     /**
      * 头像大小正则模板
      */
-    private static final Pattern PATTERN = Pattern.compile("crop\\.(\\d+\\.){4}(\\d+)");
+    private static final Pattern AVATAR_PATTERN = Pattern.compile("crop\\.(\\d+\\.){4}(\\d+)");
+    private static final String REGEX_USER = "@\\w+";
+    private static final String REGEX_TAG = "#[^#]+#";
+    private static final String REGEX_URL = "https?://[0-9a-zA-Z/.]+";
 
     private static Date sRequestDate;
+    private static int sLinkColor;
     private Context mContext;
     private List<Feed> mFeedList;
     private LayoutInflater mInflater;
@@ -55,6 +61,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         this.mFeedList = feedList;
         this.mInflater = LayoutInflater.from(context);
         sRequestDate = new Date();
+        sLinkColor = ContextCompat.getColor(context, R.color.linkText);
     }
 
     private static String userName(User user) {
@@ -68,7 +75,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     private static String avatarThumbUrl(User user) {
         if (user != null) {
             String avatar = user.getAvatar();
-            Matcher matcher = PATTERN.matcher(avatar);
+            Matcher matcher = AVATAR_PATTERN.matcher(avatar);
             if (matcher.find()) {
                 String cropStr = matcher.group();
                 String newCrop = cropStr.substring(0, cropStr.lastIndexOf(".")) + ".120";
@@ -120,15 +127,42 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
         return displayTime;
     }
 
-    private static CharSequence regexContent(String text) {
-        Pattern pattern = Pattern.compile("@\\w+");
+    /**
+     * 为内容中等用户名和链接添加颜色和点击时间
+     *
+     * @param text 原文本内容
+     */
+    private static CharSequence feedContent(String text) {
+        Pattern pattern = Pattern.compile("(" + REGEX_USER + ")|(" + REGEX_TAG + ")|(" + REGEX_URL + ")");
         Matcher matcher = pattern.matcher(text);
-        ForegroundColorSpan span = new ForegroundColorSpan(Color.parseColor("#FF0000"));
+        SpannableStringBuilder builder = new SpannableStringBuilder(text);
         while (matcher.find()) {
-            String name = matcher.group();
-            text = text.replaceAll(name, "{" + name + "}");
+            String user = matcher.group(1);
+            String tag = matcher.group(2);
+            String url = matcher.group(3);
+            if (user != null) {
+                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
+                int start = matcher.start(1);
+                int end = matcher.end(1);
+                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
+                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            if (tag != null) {
+                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
+                int start = matcher.start(2);
+                int end = matcher.end(2);
+                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
+                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            if (url != null) {
+                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
+                int start = matcher.start(3);
+                int end = matcher.end(3);
+                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
+                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
-        return text;
+        return builder;
     }
 
     /**
@@ -188,7 +222,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             String userName = userName(feed.getUser());
             mNameTextView.setVisibility(userName != null ? View.VISIBLE : View.GONE);
             mNameTextView.setText(userName);
-            mContentTextView.setText(regexContent(feed.getContent()));
+            mContentTextView.setText(feedContent(feed.getContent()));
             mDateTextView.setText(getDisplayTime(feed));
             String avatarUrl = avatarThumbUrl(feed.getUser());
             PicLoader.with(mContext).bind(avatarUrl, mAvatarImageView, R.mipmap.ic_launcher_round, 120, 120);
@@ -214,7 +248,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
                 String retweetUserName = userName(feed.getRetweet().getUser());
                 mRetweetNameTextView.setVisibility(retweetUserName != null ? View.VISIBLE : View.GONE);
                 mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, retweetUserName));
-                mRetweetContentTextView.setText(feed.getRetweet().getContent());
+                mRetweetContentTextView.setText(feedContent(feed.getRetweet().getContent()));
             } else {
                 mRetweetLayout.setVisibility(View.GONE);
                 mRetweetNameTextView.setText("");

@@ -65,7 +65,6 @@ public class SinglePicView extends android.support.v7.widget.AppCompatImageView 
                 }
                 params.width = width;
                 params.height = height;
-                Lg.debug("%s -> params.width: %d, params.height: %d", hashCode(), width, params.height);
             }
         }
         super.setImageDrawable(drawable);

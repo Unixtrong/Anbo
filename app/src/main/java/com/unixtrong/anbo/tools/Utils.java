@@ -100,7 +100,7 @@ public class Utils {
             // 选择宽和高中最大的比率作为 inSampleSize 的值
             inSampleSize = Math.max(heightRatio, widthRatio);
         }
-        Lg.debug("h: " + height + ", w: " + width + ", s: " + inSampleSize);
+        // Lg.debug("h: " + height + ", w: " + width + ", s: " + inSampleSize);
         // 设置压缩比例
         options.inSampleSize = inSampleSize;
         options.inJustDecodeBounds = false;
