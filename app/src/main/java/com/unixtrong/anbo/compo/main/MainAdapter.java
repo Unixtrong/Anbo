@@ -178,7 +178,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             mContentTextView.setText(feed.getContent());
             mDateTextView.setText(getDisplayTime(feed));
             String avatarUrl = avatarThumbUrl(feed.getUser());
-            PicLoader.with(mContext).bind(avatarUrl, mAvatarImageView, R.mipmap.ic_launcher_round);
+            PicLoader.with(mContext).bind(avatarUrl, mAvatarImageView, R.mipmap.ic_launcher_round, 120, 120);
         }
     }
 
@@ -224,7 +224,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             String[] pics = feed.getPics();
             String pic = pics.length != 0 ? pics[0] : "";
             pic = pic.replaceFirst("thumbnail", "wap720");
-            PicLoader.with(mContext).bind(pic, mPicImageView, R.mipmap.ic_launcher);
+            PicLoader.with(mContext).bind(pic, mPicImageView, R.mipmap.ic_launcher, 800, 800);
         }
     }
 
@@ -242,9 +242,10 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             String[] pics = feed.getPics();
             ImageView[] imageViews = mPicsLayout.getImageViews();
             for (int i = 0; i < pics.length; i++) {
+                String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
                 ImageView imageView = imageViews[i];
                 imageView.setVisibility(View.VISIBLE);
-                PicLoader.with(mContext).bind(pics[i], imageView, R.mipmap.ic_launcher);
+                PicLoader.with(mContext).bind(pic, imageView, R.mipmap.ic_launcher, 300, 300);
             }
             for (int i = pics.length; i < imageViews.length; i++) {
                 imageViews[i].setVisibility(View.GONE);

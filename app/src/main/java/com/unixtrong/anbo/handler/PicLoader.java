@@ -2,7 +2,6 @@ package com.unixtrong.anbo.handler;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -52,7 +51,7 @@ public class PicLoader {
         return sSingleton;
     }
 
-    public PicLoader bind(String url, ImageView target, int defaultRes) {
+    public PicLoader bind(String url, ImageView target, int defaultRes, int reqWidth, int reqHeight) {
         if (TextUtils.isEmpty(url)) {
             target.setImageResource(defaultRes);
         } else {
@@ -62,7 +61,7 @@ public class PicLoader {
                 target.setImageBitmap(bitmap);
             } else {
                 target.setImageResource(defaultRes);
-                mExecutor.execute(new LoadRunnable(new Pic(picKey, url, target)));
+                mExecutor.execute(new LoadRunnable(new Pic(picKey, url, target, reqWidth, reqHeight)));
             }
         }
         return this;
@@ -76,11 +75,15 @@ public class PicLoader {
         String mKey;
         String mUrl;
         ImageView mTarget;
+        int reqWidth;
+        int reqHeight;
 
-        Pic(String key, String url, ImageView target) {
-            mKey = key;
-            mUrl = url;
-            mTarget = target;
+        Pic(String key, String url, ImageView target, int reqWidth, int reqHeight) {
+            this.mKey = key;
+            this.mUrl = url;
+            this.mTarget = target;
+            this.reqWidth = reqWidth;
+            this.reqHeight = reqHeight;
         }
     }
 
@@ -94,20 +97,19 @@ public class PicLoader {
         @Override
         public void run() {
             File file = cacheFile(mPic.mKey);
-            Bitmap fileBitmap;
-            if (file.exists() && (fileBitmap = BitmapFactory.decodeFile(file.getAbsolutePath())) != null) {
-                mLruCache.put(mPic.mKey, fileBitmap);
+            Bitmap memoryBitmap;
+            if (file.exists() && (memoryBitmap = Utils.decodeToBitmap(file.getAbsolutePath(), mPic.reqWidth, mPic.reqHeight)) != null) {
+                mLruCache.put(mPic.mKey, memoryBitmap);
                 mHandler.obtainMessage(HANDLER_ON_DISK, mPic).sendToTarget();
             } else {
                 file = Downloader.start(mPic.mUrl, file.getAbsolutePath());
-                Bitmap downloadBitmap;
-                if (file != null && file.exists() && (downloadBitmap = BitmapFactory.decodeFile(file.getAbsolutePath())) != null) {
-                    mLruCache.put(mPic.mKey, downloadBitmap);
+                Bitmap diskBitmap;
+                if (file != null && file.exists() && (diskBitmap = Utils.decodeToBitmap(file.getAbsolutePath(), mPic.reqWidth, mPic.reqHeight)) != null) {
+                    mLruCache.put(mPic.mKey, diskBitmap);
                     mHandler.obtainMessage(HANDLER_ON_REMOTE, mPic).sendToTarget();
                 }
             }
         }
-
     }
 
     private class ActionHandler extends Handler {

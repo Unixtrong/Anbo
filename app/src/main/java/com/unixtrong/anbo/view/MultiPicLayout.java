@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.unixtrong.anbo.R;
+import com.unixtrong.anbo.tools.Utils;
 
 /**
  * Created by danyun on 2017/8/10
@@ -37,6 +38,7 @@ public class MultiPicLayout extends LinearLayout {
         Context context = getContext();
         int match = ViewGroup.LayoutParams.MATCH_PARENT;
         int wrap = ViewGroup.LayoutParams.WRAP_CONTENT;
+        int screenWidth = Utils.getScreenSize(context).widthPixels;
         for (int i = 0; i < 3; i++) {
             LinearLayout rowLayout = new LinearLayout(context);
             rowLayout.setWeightSum(3F);
@@ -44,8 +46,10 @@ public class MultiPicLayout extends LinearLayout {
                 ImageView imageView = mImageViews[mFillIndex++] = new ImageView(context);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageView.setImageResource(R.mipmap.ic_launcher);
-                LayoutParams childParams = new LayoutParams(0, wrap);
+                LayoutParams childParams = new LayoutParams(0, (int) (screenWidth / 3.1F));
                 childParams.weight = 1;
+                int dp3 = Utils.dip(context, 3);
+                childParams.setMargins(dp3, dp3, dp3, dp3);
                 rowLayout.addView(imageView, childParams);
             }
             LayoutParams params = new LayoutParams(match, wrap);

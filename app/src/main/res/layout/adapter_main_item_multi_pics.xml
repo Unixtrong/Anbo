@@ -13,5 +13,6 @@
     <com.unixtrong.anbo.view.MultiPicLayout
         android:id="@+id/mpl_main_pics"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"/>
 </LinearLayout>
