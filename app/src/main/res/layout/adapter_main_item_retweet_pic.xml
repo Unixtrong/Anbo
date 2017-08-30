@@ -19,8 +19,19 @@
         android:padding="@dimen/retweet_padding">
 
         <include
+            android:id="@+id/include_retweet_body"
             layout="@layout/layout_retweet_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
+        <com.unixtrong.anbo.view.SinglePicView
+            android:id="@+id/iv_main_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/include_retweet_body"
+            android:layout_marginTop="10dp"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher"/>
     </RelativeLayout>
 </LinearLayout>

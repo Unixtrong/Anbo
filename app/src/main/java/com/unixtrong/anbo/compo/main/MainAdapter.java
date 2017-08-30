@@ -186,6 +186,10 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
                 return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
             case Feed.TYPE_MULTI_PICTURE:
                 return new MultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_multi_pics, parent, false));
+            case Feed.TYPE_RETWEET_PICTURE:
+                return new RetweetPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_pic, parent, false));
+            case Feed.TYPE_RETWEET_MULTI_PICTURE:
+                return new RetweetMultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_multi_pics, parent, false));
             case Feed.TYPE_RETWEET:
             default:
                 return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
@@ -288,6 +292,67 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
             super.bind(feed);
             String[] pics = feed.getPics();
             ImageView[] imageViews = mPicsLayout.getImageViews();
+            for (int i = 0; i < pics.length; i++) {
+                String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
+                ImageView imageView = imageViews[i];
+                imageView.setVisibility(View.VISIBLE);
+                PicLoader.with(mContext).bind(pic, imageView, R.mipmap.ic_launcher, 300, 300);
+            }
+            for (int i = pics.length; i < imageViews.length; i++) {
+                imageViews[i].setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private class RetweetPicHolder extends FeedHolder {
+
+        TextView mRetweetNameTextView;
+        TextView mRetweetContentTextView;
+        ImageView mRetweetPicImageView;
+
+        RetweetPicHolder(View itemView) {
+            super(itemView);
+            mRetweetNameTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet_name);
+            mRetweetContentTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet);
+            mRetweetPicImageView = (ImageView) itemView.findViewById(R.id.iv_main_pic);
+        }
+
+        void bind(Feed feed) {
+            super.bind(feed);
+            Feed retweet = feed.getRetweet();
+            String retweetUserName = userName(retweet.getUser());
+            mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, retweetUserName));
+            mRetweetContentTextView.setText(feedContent(feed.getRetweet().getContent()));
+
+            String[] pics = retweet.getPics();
+            String pic = pics.length != 0 ? pics[0] : "";
+            pic = pic.replaceFirst("thumbnail", "wap720");
+            PicLoader.with(mContext).bind(pic, mRetweetPicImageView, R.mipmap.ic_launcher, 800, 800);
+        }
+    }
+
+    private class RetweetMultiPicHolder extends FeedHolder {
+
+        TextView mRetweetNameTextView;
+        TextView mRetweetContentTextView;
+        MultiPicLayout mRetweetPicsLayout;
+
+        RetweetMultiPicHolder(View itemView) {
+            super(itemView);
+            mRetweetNameTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet_name);
+            mRetweetContentTextView = (TextView) itemView.findViewById(R.id.tv_main_retweet);
+            mRetweetPicsLayout = (MultiPicLayout) itemView.findViewById(R.id.mpl_main_pics);
+        }
+
+        void bind(Feed feed) {
+            super.bind(feed);
+            Feed retweet = feed.getRetweet();
+            String retweetUserName = userName(retweet.getUser());
+            mRetweetNameTextView.setText(mContext.getString(R.string.main_adapter_retweet_user, retweetUserName));
+            mRetweetContentTextView.setText(feedContent(feed.getRetweet().getContent()));
+
+            String[] pics = retweet.getPics();
+            ImageView[] imageViews = mRetweetPicsLayout.getImageViews();
             for (int i = 0; i < pics.length; i++) {
                 String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
                 ImageView imageView = imageViews[i];

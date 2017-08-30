@@ -21,6 +21,8 @@ public class Feed {
     public static final int TYPE_RETWEET = 1;
     public static final int TYPE_PICTURE = 2;
     public static final int TYPE_MULTI_PICTURE = 3;
+    public static final int TYPE_RETWEET_PICTURE = 4;
+    public static final int TYPE_RETWEET_MULTI_PICTURE = 5;
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
     /**
@@ -93,8 +95,19 @@ public class Feed {
 
         }
         if (!jsonObject.isNull("retweeted_status")) {
-            feed.setRetweet(Feed.fill(jsonObject.optJSONObject("retweeted_status")));
-            feed.setType(TYPE_RETWEET);
+            Feed retweet = fill(jsonObject.optJSONObject("retweeted_status"));
+            feed.setRetweet(retweet);
+            switch (retweet.getType()) {
+                case TYPE_PICTURE:
+                    feed.setType(TYPE_RETWEET_PICTURE);
+                    break;
+                case TYPE_MULTI_PICTURE:
+                    feed.setType(TYPE_RETWEET_MULTI_PICTURE);
+                    break;
+                default:
+                    feed.setType(TYPE_RETWEET);
+                    break;
+            }
         }
         return feed;
     }
