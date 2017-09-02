@@ -1,4 +1,4 @@
-package com.unixtrong.anbo.compo.main;
+package com.unixtrong.anbo.compo.home;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * Created by danyun on 2017/8/5
  */
 
-class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
+class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.FeedHolder> {
     /**
      * 格式化时间文本工具
      * 用于较早发布的微博
@@ -56,7 +56,7 @@ class MainAdapter extends RecyclerView.Adapter<MainAdapter.FeedHolder> {
     private List<Feed> mFeedList;
     private LayoutInflater mInflater;
 
-    MainAdapter(Context context, List<Feed> feedList) {
+    HomeAdapter(Context context, List<Feed> feedList) {
         this.mContext = context;
         this.mFeedList = feedList;
         this.mInflater = LayoutInflater.from(context);

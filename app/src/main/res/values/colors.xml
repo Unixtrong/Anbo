@@ -6,4 +6,6 @@
 
     <color name="border">#50E6E6FA</color>
     <color name="linkText">#3f7daf</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
 </resources>

@@ -6,4 +6,7 @@
     <string name="main_auth_failure">验证失败(%1$s):%2$s</string>
     <string name="main_request_failure">加载失败</string>
     <string name="main_adapter_retweet_user">\@%1$s</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
