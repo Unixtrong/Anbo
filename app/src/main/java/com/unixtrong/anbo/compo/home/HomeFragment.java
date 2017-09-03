@@ -92,6 +92,7 @@ public class HomeFragment extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
         feedsRecycler.setLayoutManager(layoutManager);
         feedsRecycler.setAdapter(mAdapter);
+        mAdapter.setHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.layout_search_header, feedsRecycler, false));
         // 设置 RecyclerView 的默认分割线
         DividerItemDecoration decor = new DividerItemDecoration(getActivity(), layoutManager.getOrientation());
         decor.setDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.shape_feed_divider));

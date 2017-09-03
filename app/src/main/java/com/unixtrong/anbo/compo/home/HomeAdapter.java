@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * Created by danyun on 2017/8/5
  */
 
-class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.FeedHolder> {
+class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
     /**
      * 格式化时间文本工具
      * 用于较早发布的微博
@@ -49,12 +49,14 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.FeedHolder> {
     private static final String REGEX_USER = "@\\w+";
     private static final String REGEX_TAG = "#[^#]+#";
     private static final String REGEX_URL = "https?://[0-9a-zA-Z/.]+";
+    private static final int TYPE_HEADER = 10;
 
     private static Date sRequestDate;
     private static int sLinkColor;
     private Context mContext;
     private List<Feed> mFeedList;
     private LayoutInflater mInflater;
+    private View mHeaderView;
 
     HomeAdapter(Context context, List<Feed> feedList) {
         this.mContext = context;
@@ -62,6 +64,20 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.FeedHolder> {
         this.mInflater = LayoutInflater.from(context);
         sRequestDate = new Date();
         sLinkColor = ContextCompat.getColor(context, R.color.linkText);
+    }
+
+    void setHeaderView(View headerView) {
+        mHeaderView = headerView;
+        notifyItemInserted(0);
+    }
+
+    /**
+     * 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
+     *
+     * @param date 最近一次请求的时间
+     */
+    void updateLastRequestTime(Date date) {
+        sRequestDate = date;
     }
 
     private static String userName(User user) {
@@ -85,6 +101,85 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.FeedHolder> {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mHeaderView != null && position == 0) return TYPE_HEADER;
+        return mFeedList.get(position).getType();
+    }
+
+    @Override
+    public ListHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case TYPE_HEADER:
+                return new ListHolder(mHeaderView);
+            case Feed.TYPE_PICTURE:
+                return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
+            case Feed.TYPE_MULTI_PICTURE:
+                return new MultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_multi_pics, parent, false));
+            case Feed.TYPE_RETWEET_PICTURE:
+                return new RetweetPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_pic, parent, false));
+            case Feed.TYPE_RETWEET_MULTI_PICTURE:
+                return new RetweetMultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_multi_pics, parent, false));
+            case Feed.TYPE_RETWEET:
+            default:
+                return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(ListHolder holder, int position) {
+        if (getItemViewType(position) == TYPE_HEADER) {
+            return;
+        }
+        holder.bind(mFeedList.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        if (mHeaderView != null) {
+            return mFeedList.size() + 1;
+        }
+        return mFeedList.size();
+    }
+
+    /**
+     * 为内容中等用户名和链接添加颜色和点击时间
+     *
+     * @param text 原文本内容
+     */
+    private static CharSequence feedContent(String text) {
+        Pattern pattern = Pattern.compile("(" + REGEX_USER + ")|(" + REGEX_TAG + ")|(" + REGEX_URL + ")");
+        Matcher matcher = pattern.matcher(text);
+        SpannableStringBuilder builder = new SpannableStringBuilder(text);
+        while (matcher.find()) {
+            String user = matcher.group(1);
+            String tag = matcher.group(2);
+            String url = matcher.group(3);
+            if (user != null) {
+                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
+                int start = matcher.start(1);
+                int end = matcher.end(1);
+                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
+                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            if (tag != null) {
+                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
+                int start = matcher.start(2);
+                int end = matcher.end(2);
+                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
+                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            if (url != null) {
+                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
+                int start = matcher.start(3);
+                int end = matcher.end(3);
+                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
+                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+        return builder;
     }
 
     /**
@@ -127,86 +222,16 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.FeedHolder> {
         return displayTime;
     }
 
-    /**
-     * 为内容中等用户名和链接添加颜色和点击时间
-     *
-     * @param text 原文本内容
-     */
-    private static CharSequence feedContent(String text) {
-        Pattern pattern = Pattern.compile("(" + REGEX_USER + ")|(" + REGEX_TAG + ")|(" + REGEX_URL + ")");
-        Matcher matcher = pattern.matcher(text);
-        SpannableStringBuilder builder = new SpannableStringBuilder(text);
-        while (matcher.find()) {
-            String user = matcher.group(1);
-            String tag = matcher.group(2);
-            String url = matcher.group(3);
-            if (user != null) {
-                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
-                int start = matcher.start(1);
-                int end = matcher.end(1);
-                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
-                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-            if (tag != null) {
-                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
-                int start = matcher.start(2);
-                int end = matcher.end(2);
-                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
-                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-            if (url != null) {
-                ForegroundColorSpan span = new ForegroundColorSpan(sLinkColor);
-                int start = matcher.start(3);
-                int end = matcher.end(3);
-                Lg.debug("text: " + text + ", s: " + start + ", e: " + end);
-                builder.setSpan(span, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
+    static class ListHolder extends RecyclerView.ViewHolder {
+        ListHolder(View itemView) {
+            super(itemView);
         }
-        return builder;
-    }
 
-    /**
-     * 更新页面的请求时间，用于每条微博的时间展示（如「5 秒前」「20 分钟前」）
-     *
-     * @param date 最近一次请求的时间
-     */
-    void updateLastRequestTime(Date date) {
-        sRequestDate = date;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return mFeedList.get(position).getType();
-    }
-
-    @Override
-    public FeedHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        switch (viewType) {
-            case Feed.TYPE_PICTURE:
-                return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
-            case Feed.TYPE_MULTI_PICTURE:
-                return new MultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_multi_pics, parent, false));
-            case Feed.TYPE_RETWEET_PICTURE:
-                return new RetweetPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_pic, parent, false));
-            case Feed.TYPE_RETWEET_MULTI_PICTURE:
-                return new RetweetMultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_multi_pics, parent, false));
-            case Feed.TYPE_RETWEET:
-            default:
-                return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
+        void bind(Feed feed) {
         }
     }
 
-    @Override
-    public void onBindViewHolder(FeedHolder holder, int position) {
-        holder.bind(mFeedList.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return mFeedList.size();
-    }
-
-    static class FeedHolder extends RecyclerView.ViewHolder {
+    static class FeedHolder extends ListHolder {
         Context mContext;
         ImageView mAvatarImageView;
         TextView mNameTextView;

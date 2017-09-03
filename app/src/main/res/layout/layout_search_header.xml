@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/border"
+              android:orientation="vertical"
+              android:paddingEnd="@dimen/main_divider"
+              android:paddingStart="@dimen/main_divider"
+              android:paddingTop="@dimen/main_divider">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:gravity="center"
+        android:padding="@dimen/main_divider"
+        android:text="大家都在搜：张一山否认退出娱乐圈"/>
+
+</LinearLayout>

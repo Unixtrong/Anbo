@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="retweet_padding">8dp</dimen>
+    <dimen name="main_divider">7dp</dimen>
 </resources>
