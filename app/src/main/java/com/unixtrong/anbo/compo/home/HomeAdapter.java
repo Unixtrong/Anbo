@@ -1,8 +1,8 @@
 package com.unixtrong.anbo.compo.home;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -12,9 +12,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.unixtrong.anbo.R;
+import com.unixtrong.anbo.compo.picture.LargePicActivity;
 import com.unixtrong.anbo.entity.Feed;
 import com.unixtrong.anbo.entity.User;
 import com.unixtrong.anbo.handler.PicLoader;
+import com.unixtrong.anbo.tools.BaseRecyclerAdapter;
 import com.unixtrong.anbo.tools.Lg;
 import com.unixtrong.anbo.view.MultiPicLayout;
 
@@ -31,7 +33,7 @@ import java.util.regex.Pattern;
  * Created by danyun on 2017/8/5
  */
 
-class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
+class HomeAdapter extends BaseRecyclerAdapter<Feed> {
     /**
      * 格式化时间文本工具
      * 用于较早发布的微博
@@ -49,26 +51,45 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
     private static final String REGEX_USER = "@\\w+";
     private static final String REGEX_TAG = "#[^#]+#";
     private static final String REGEX_URL = "https?://[0-9a-zA-Z/.]+";
-    private static final int TYPE_HEADER = 10;
 
     private static Date sRequestDate;
     private static int sLinkColor;
-    private Context mContext;
-    private List<Feed> mFeedList;
     private LayoutInflater mInflater;
-    private View mHeaderView;
 
     HomeAdapter(Context context, List<Feed> feedList) {
-        this.mContext = context;
-        this.mFeedList = feedList;
+        super(feedList);
         this.mInflater = LayoutInflater.from(context);
         sRequestDate = new Date();
         sLinkColor = ContextCompat.getColor(context, R.color.linkText);
     }
 
-    void setHeaderView(View headerView) {
-        mHeaderView = headerView;
-        notifyItemInserted(0);
+    @Override
+    protected FeedHolder onItemCreate(ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case Feed.TYPE_PICTURE:
+                return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
+            case Feed.TYPE_MULTI_PICTURE:
+                return new MultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_multi_pics, parent, false));
+            case Feed.TYPE_RETWEET_PICTURE:
+                return new RetweetPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_pic, parent, false));
+            case Feed.TYPE_RETWEET_MULTI_PICTURE:
+                return new RetweetMultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_multi_pics, parent, false));
+            case Feed.TYPE_RETWEET:
+            default:
+                return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
+        }
+    }
+
+    @Override
+    protected void onItemBind(Holder holder, int position, Feed data) {
+        if (holder instanceof FeedHolder) {
+            ((FeedHolder) holder).bind(getData().get(position));
+        }
+    }
+
+    @Override
+    protected int getDataViewType(int position) {
+        return getData().get(position).getType();
     }
 
     /**
@@ -101,47 +122,6 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (mHeaderView != null && position == 0) return TYPE_HEADER;
-        return mFeedList.get(position).getType();
-    }
-
-    @Override
-    public ListHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        switch (viewType) {
-            case TYPE_HEADER:
-                return new ListHolder(mHeaderView);
-            case Feed.TYPE_PICTURE:
-                return new PicHolder(mInflater.inflate(R.layout.adapter_main_item_pic, parent, false));
-            case Feed.TYPE_MULTI_PICTURE:
-                return new MultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_multi_pics, parent, false));
-            case Feed.TYPE_RETWEET_PICTURE:
-                return new RetweetPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_pic, parent, false));
-            case Feed.TYPE_RETWEET_MULTI_PICTURE:
-                return new RetweetMultiPicHolder(mInflater.inflate(R.layout.adapter_main_item_retweet_multi_pics, parent, false));
-            case Feed.TYPE_RETWEET:
-            default:
-                return new TextHolder(mInflater.inflate(R.layout.adapter_main_item, parent, false));
-        }
-    }
-
-    @Override
-    public void onBindViewHolder(ListHolder holder, int position) {
-        if (getItemViewType(position) == TYPE_HEADER) {
-            return;
-        }
-        holder.bind(mFeedList.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        if (mHeaderView != null) {
-            return mFeedList.size() + 1;
-        }
-        return mFeedList.size();
     }
 
     /**
@@ -222,16 +202,7 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
         return displayTime;
     }
 
-    static class ListHolder extends RecyclerView.ViewHolder {
-        ListHolder(View itemView) {
-            super(itemView);
-        }
-
-        void bind(Feed feed) {
-        }
-    }
-
-    static class FeedHolder extends ListHolder {
+    static class FeedHolder extends BaseRecyclerAdapter.Holder {
         Context mContext;
         ImageView mAvatarImageView;
         TextView mNameTextView;
@@ -301,12 +272,14 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
             String pic = pics.length != 0 ? pics[0] : "";
             pic = pic.replaceFirst("thumbnail", "wap720");
             PicLoader.with(mContext).bind(pic, mPicImageView, R.mipmap.ic_launcher, 800, 800);
+            mPicImageView.setOnClickListener(new OnPicClickListener(0, new String[]{pic}));
         }
     }
 
     private class MultiPicHolder extends FeedHolder {
 
         MultiPicLayout mPicsLayout;
+        String[] mMiddlePics;
 
         MultiPicHolder(View itemView) {
             super(itemView);
@@ -316,17 +289,21 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
         void bind(Feed feed) {
             super.bind(feed);
             String[] pics = feed.getPics();
+            mMiddlePics = new String[pics.length];
             ImageView[] imageViews = mPicsLayout.getImageViews();
             for (int i = 0; i < pics.length; i++) {
                 String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
+                mMiddlePics[i] = pic;
                 ImageView imageView = imageViews[i];
                 imageView.setVisibility(View.VISIBLE);
                 PicLoader.with(mContext).bind(pic, imageView, R.mipmap.ic_launcher, 300, 300);
+                imageView.setOnClickListener(new OnPicClickListener(i, mMiddlePics));
             }
             for (int i = pics.length; i < imageViews.length; i++) {
                 imageViews[i].setVisibility(View.GONE);
             }
         }
+
     }
 
     private class RetweetPicHolder extends FeedHolder {
@@ -353,6 +330,7 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
             String pic = pics.length != 0 ? pics[0] : "";
             pic = pic.replaceFirst("thumbnail", "wap720");
             PicLoader.with(mContext).bind(pic, mRetweetPicImageView, R.mipmap.ic_launcher, 800, 800);
+            mRetweetPicImageView.setOnClickListener(new OnPicClickListener(0, new String[]{pic}));
         }
     }
 
@@ -361,6 +339,7 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
         TextView mRetweetNameTextView;
         TextView mRetweetContentTextView;
         MultiPicLayout mRetweetPicsLayout;
+        String[] mMiddlePics;
 
         RetweetMultiPicHolder(View itemView) {
             super(itemView);
@@ -377,16 +356,38 @@ class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ListHolder> {
             mRetweetContentTextView.setText(feedContent(feed.getRetweet().getContent()));
 
             String[] pics = retweet.getPics();
+            mMiddlePics = new String[pics.length];
             ImageView[] imageViews = mRetweetPicsLayout.getImageViews();
             for (int i = 0; i < pics.length; i++) {
                 String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
+                mMiddlePics[i] = pic;
                 ImageView imageView = imageViews[i];
                 imageView.setVisibility(View.VISIBLE);
                 PicLoader.with(mContext).bind(pic, imageView, R.mipmap.ic_launcher, 300, 300);
+                imageView.setOnClickListener(new OnPicClickListener(i, mMiddlePics));
             }
             for (int i = pics.length; i < imageViews.length; i++) {
                 imageViews[i].setVisibility(View.GONE);
             }
+        }
+    }
+
+    private class OnPicClickListener implements View.OnClickListener {
+
+        private int mCurrentIndex;
+        private String[] mPicUrls;
+
+        OnPicClickListener(int currentIndex, String[] picUrls) {
+            this.mCurrentIndex = currentIndex;
+            this.mPicUrls = picUrls;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(v.getContext(), LargePicActivity.class);
+            intent.putExtra("cur", mCurrentIndex);
+            intent.putExtra("urls", mPicUrls);
+            v.getContext().startActivity(intent);
         }
     }
 }
