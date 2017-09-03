@@ -47,4 +47,5 @@ class MainPagerAdapter extends FragmentStatePagerAdapter {
     public int getCount() {
         return 3;
     }
+
 }

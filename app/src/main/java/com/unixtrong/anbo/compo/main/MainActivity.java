@@ -2,8 +2,11 @@ package com.unixtrong.anbo.compo.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
@@ -15,12 +18,16 @@ import com.unixtrong.anbo.compo.home.HomeFragment;
 import com.unixtrong.anbo.handler.AppInfo;
 import com.unixtrong.anbo.tools.Lg;
 
-public class MainActivity extends AppCompatActivity implements WbAuthListener {
+public class MainActivity extends AppCompatActivity implements WbAuthListener, View.OnClickListener, ViewPager.OnPageChangeListener {
 
     private SsoHandler mSsoHandler;
     private MainPagerAdapter mAdapter;
     private ViewPager mPager;
     private HomeFragment mHomeFragment;
+    private int[] mTitleNameIds = {R.id.tv_main_home, R.id.tv_main_message, R.id.tv_main_discover};
+    private TextView[] mTitleNames = new TextView[3];
+    private int mHighLightColor;
+    private int mNormalColor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +52,19 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
 
     private void initView() {
         mPager = (ViewPager) findViewById(R.id.vp_main_fragment);
+        for (int i = 0; i < mTitleNameIds.length; i++) {
+            mTitleNames[i] = (TextView) findViewById(mTitleNameIds[i]);
+            mTitleNames[i].setOnClickListener(this);
+        }
+
         mAdapter = new MainPagerAdapter(getSupportFragmentManager());
         mHomeFragment = (HomeFragment) mAdapter.getItem(0);
         mPager.setAdapter(mAdapter);
+        mPager.addOnPageChangeListener(this);
+
+        mHighLightColor = ContextCompat.getColor(this, R.color.highLightText);
+        mNormalColor = ContextCompat.getColor(this, R.color.black);
+        mTitleNames[0].setTextColor(mHighLightColor);
     }
 
     @Override
@@ -93,5 +110,33 @@ public class MainActivity extends AppCompatActivity implements WbAuthListener {
     public void onFailure(WbConnectErrorMessage errorMsg) {
         String toast = getString(R.string.main_auth_failure, errorMsg.getErrorCode(), errorMsg.getErrorMessage());
         Toast.makeText(this, toast, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        for (int i = 0; i < mTitleNameIds.length; i++) {
+            if (v.getId() == mTitleNameIds[i]) {
+                mPager.setCurrentItem(i);
+            }
+        }
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        for (int i = 0; i < mTitleNames.length; i++) {
+            if (position == i) {
+                mTitleNames[i].setTextColor(mHighLightColor);
+                continue;
+            }
+            mTitleNames[i].setTextColor(mNormalColor);
+        }
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
     }
 }

@@ -9,7 +9,8 @@
         android:layout_height="wrap_content"
         android:text="name"
         android:textColor="@color/linkText"
-        android:textSize="15sp"/>
+        android:textSize="15sp"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/tv_main_retweet"
