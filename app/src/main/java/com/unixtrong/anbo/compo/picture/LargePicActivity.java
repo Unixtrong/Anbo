@@ -1,5 +1,6 @@
 package com.unixtrong.anbo.compo.picture;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -9,7 +10,6 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,12 +25,14 @@ public class LargePicActivity extends AppCompatActivity implements ViewPager.OnP
     private TextView mProgressTextView;
     private String[] mPicUrls;
     private int mCurrentIndex;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_large_pic);
 
+        mContext = this;
         Intent intent = getIntent();
         mCurrentIndex = intent.getIntExtra("cur", 0);
         mPicUrls = intent.getStringArrayExtra("urls");
@@ -80,8 +82,8 @@ public class LargePicActivity extends AppCompatActivity implements ViewPager.OnP
 
     private class Adapter extends PagerAdapter {
 
-        private DisplayMetrics mScreenSize = Utils.getScreenSize(LargePicActivity.this);
-        private LayoutInflater mInflater = LayoutInflater.from(LargePicActivity.this);
+        private DisplayMetrics mScreenSize = Utils.getScreenSize(mContext);
+        private LayoutInflater mInflater = LayoutInflater.from(mContext);
         private ImageView[] mImageViews = new ImageView[mPicUrls.length];
 
         @Override
@@ -103,8 +105,8 @@ public class LargePicActivity extends AppCompatActivity implements ViewPager.OnP
             ImageView imageView = mImageViews[position];
             int w = mScreenSize.widthPixels;
             int h = mScreenSize.heightPixels;
-            String imageUrl = getImageUrl(position);
-            PicLoader.with(LargePicActivity.this).bind(imageUrl, imageView, R.mipmap.ic_launcher, w, h);
+            String defaultUrl = getDefaultUrl(position);
+            PicLoader.with(mContext).bind(defaultUrl, getLargeUrl(defaultUrl), imageView, R.mipmap.ic_launcher, w, h);
             container.addView(imageView);
             return imageView;
         }
@@ -115,8 +117,12 @@ public class LargePicActivity extends AppCompatActivity implements ViewPager.OnP
             container.removeView(view);
         }
 
-        private String getImageUrl(int position) {
+        private String getDefaultUrl(int position) {
             return mPicUrls[position];
+        }
+
+        private String getLargeUrl(String defaultUrl) {
+            return defaultUrl.replace("wap360", "mw1024");
         }
     }
 }

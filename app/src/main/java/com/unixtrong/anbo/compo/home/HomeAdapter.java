@@ -292,7 +292,7 @@ class HomeAdapter extends BaseRecyclerAdapter<Feed> {
             mMiddlePics = new String[pics.length];
             ImageView[] imageViews = mPicsLayout.getImageViews();
             for (int i = 0; i < pics.length; i++) {
-                String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
+                String pic = pics[i].replaceFirst("thumbnail", "wap360");
                 mMiddlePics[i] = pic;
                 ImageView imageView = imageViews[i];
                 imageView.setVisibility(View.VISIBLE);
@@ -359,7 +359,7 @@ class HomeAdapter extends BaseRecyclerAdapter<Feed> {
             mMiddlePics = new String[pics.length];
             ImageView[] imageViews = mRetweetPicsLayout.getImageViews();
             for (int i = 0; i < pics.length; i++) {
-                String pic = pics[i].replaceFirst("thumbnail", "bmiddle");
+                String pic = pics[i].replaceFirst("thumbnail", "wap360");
                 mMiddlePics[i] = pic;
                 ImageView imageView = imageViews[i];
                 imageView.setVisibility(View.VISIBLE);
